@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "817639783317",
+    "project_id": "funerariaapp-1bc09",
+    "storage_bucket": "funerariaapp-1bc09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817639783317:android:5e52a0c005328a90c8149c",
+        "android_client_info": {
+          "package_name": "com.tuempresa.gestorfuneraria"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_4RTvFNpn6v4YqJ6cPYxoH-bM5KsvBfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

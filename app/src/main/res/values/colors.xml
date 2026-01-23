@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#121212</color>
+    <color name="gold">#D4AF37</color>
+    <color name="gold_dark">#C5A059</color> <color name="white">#FFFFFF</color>
+    <color name="gray_bg">#F5F5F5</color>
+    <color name="dark_gray">#333333</color>
+    <color name="red_error">#B00020</color>
+    <color name="green_success">#00C853</color>
+
+    <color name="colorPrimary">#121212</color>
+    <color name="colorPrimaryVariant">#D4AF37</color>
+    <color name="colorOnPrimary">#D4AF37</color>
+</resources>

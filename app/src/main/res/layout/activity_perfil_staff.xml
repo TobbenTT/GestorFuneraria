@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gray_bg"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mi Perfil"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="32dp"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:cardCornerRadius="70dp"
+        app:cardElevation="8dp"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/imgMiFoto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/baseline_account_circle_24"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvMiEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="cargando..."
+        android:textSize="18sp"
+        android:textColor="@color/dark_gray"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cambiar Foto:"
+        android:textStyle="bold"
+        android:textColor="@color/gold"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Copia el enlace de tu foto (Facebook, LinkedIn, etc) y pégalo aquí:"
+        android:textSize="12sp"
+        android:textColor="@color/dark_gray"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etUrlFoto"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Pegar https://..."
+        android:background="@android:drawable/editbox_background_normal"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnGuardarFoto"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:text="GUARDAR CAMBIOS"
+        android:backgroundTint="@color/black"
+        android:textColor="@color/gold"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnVolverStaff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="VOLVER"
+        android:backgroundTint="@color/dark_gray"/>
+
+</LinearLayout>
