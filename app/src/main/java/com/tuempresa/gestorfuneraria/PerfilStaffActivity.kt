@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -13,63 +12,90 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class PerfilStaffActivity : AppCompatActivity() {
 
+    private lateinit var etNombre: EditText
+    private lateinit var etUrl: EditText
+    private lateinit var imgPreview: ImageView
+    private lateinit var db: FirebaseFirestore
+    private lateinit var emailActual: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_perfil_staff)
 
-        val imgMiFoto = findViewById<ImageView>(R.id.imgMiFoto)
-        val tvMiEmail = findViewById<TextView>(R.id.tvMiEmail)
-        val etUrl = findViewById<EditText>(R.id.etUrlFoto)
-        val btnGuardar = findViewById<Button>(R.id.btnGuardarFoto)
-        val btnVolver = findViewById<Button>(R.id.btnVolverStaff)
+        // Referencias
+        etNombre = findViewById(R.id.etNombreStaff)
+        etUrl = findViewById(R.id.etUrlFoto)
+        imgPreview = findViewById(R.id.imgPerfilPreview)
+        val btnGuardar = findViewById<Button>(R.id.btnGuardarPerfil)
+        val btnVolver = findViewById<Button>(R.id.btnVolver)
 
-        val usuario = FirebaseAuth.getInstance().currentUser
-        val db = FirebaseFirestore.getInstance()
+        db = FirebaseFirestore.getInstance()
+        val user = FirebaseAuth.getInstance().currentUser
 
-        // 1. CARGAR DATOS AL ENTRAR
-        if (usuario != null) {
-            val email = usuario.email
-            tvMiEmail.text = email
+        if (user != null) {
+            emailActual = user.email ?: ""
+            cargarDatosActuales()
+        } else {
+            finish() // Si no hay usuario, cierra
+        }
 
-            db.collection("usuarios").document(email!!).get()
-                .addOnSuccessListener { doc ->
-                    val urlActual = doc.getString("fotoUrl") ?: ""
+        // Botón Guardar
+        btnGuardar.setOnClickListener {
+            guardarCambios()
+        }
 
-                    if (urlActual.isNotEmpty()) {
-                        etUrl.setText(urlActual) // Muestra el link actual
+        // Botón Volver
+        btnVolver.setOnClickListener {
+            finish()
+        }
+    }
 
-                        // Cargar foto visualmente (quitando filtros negros si los hubiera)
-                        imgMiFoto.clearColorFilter()
-                        imgMiFoto.imageTintList = null
-                        Glide.with(this).load(urlActual).circleCrop().into(imgMiFoto)
+    private fun cargarDatosActuales() {
+        db.collection("usuarios").document(emailActual).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // 1. Cargar Nombre
+                    val nombre = document.getString("nombre") ?: ""
+                    etNombre.setText(nombre)
+
+                    // 2. Cargar URL Foto
+                    val url = document.getString("fotoUrl") ?: ""
+                    etUrl.setText(url)
+
+                    // Mostrar foto si hay URL
+                    if (url.isNotEmpty()) {
+                        Glide.with(this).load(url).circleCrop().into(imgPreview)
                     }
                 }
-        }
-
-        // 2. GUARDAR EL NUEVO LINK
-        btnGuardar.setOnClickListener {
-            val nuevaUrl = etUrl.text.toString().trim()
-
-            if (nuevaUrl.isNotEmpty() && usuario != null) {
-                // Actualizamos solo el campo de texto en la Base de Datos
-                db.collection("usuarios").document(usuario.email!!)
-                    .update("fotoUrl", nuevaUrl)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "¡Foto Actualizada! 📸", Toast.LENGTH_SHORT).show()
-
-                        // Refrescamos la imagen en pantalla
-                        imgMiFoto.clearColorFilter()
-                        imgMiFoto.imageTintList = null
-                        Glide.with(this).load(nuevaUrl).circleCrop().into(imgMiFoto)
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(this, "Error al guardar", Toast.LENGTH_SHORT).show()
-                    }
-            } else {
-                Toast.makeText(this, "Pega un enlace primero", Toast.LENGTH_SHORT).show()
             }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al cargar datos", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun guardarCambios() {
+        val nuevoNombre = etNombre.text.toString().trim()
+        val nuevaUrl = etUrl.text.toString().trim()
+
+        if (nuevoNombre.isEmpty()) {
+            Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        btnVolver.setOnClickListener { finish() }
+        // Preparamos los datos a actualizar
+        val datosActualizados = hashMapOf<String, Any>(
+            "nombre" to nuevoNombre,
+            "fotoUrl" to nuevaUrl
+        )
+
+        db.collection("usuarios").document(emailActual)
+            .update(datosActualizados)
+            .addOnSuccessListener {
+                Toast.makeText(this, "¡Perfil actualizado! ✅", Toast.LENGTH_SHORT).show()
+                finish() // Volvemos a la pantalla anterior
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al guardar", Toast.LENGTH_SHORT).show()
+            }
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,49 +11,131 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@color/black"
-        android:padding="24dp">
-
-        <TextView
-            android:id="@+id/tvTituloBienvenida"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hola, Chofer"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/gold"
-            android:layout_marginBottom="16dp"/>
+        android:padding="24dp"
+        android:paddingBottom="32dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-            <Button
-                android:id="@+id/btnIrPerfil"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Editar Mi Foto 📷"
-                android:textSize="12sp"
-                android:backgroundTint="@color/dark_gray"
-                android:textColor="@color/white"
-                android:layout_marginEnd="8dp"/>
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bienvenido,"
+                    android:textColor="#B0BEC5"
+                    android:textSize="14sp"/>
+                <TextView
+                    android:id="@+id/tvNombreStaff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cargando..."
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/gold"/>
+            </LinearLayout>
 
             <ImageButton
                 android:id="@+id/btnCerrarSesion"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_exit"
-                android:backgroundTint="@color/red_error"
-                android:tint="@color/white"/>
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/red_error"/>
         </LinearLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#263238">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/imgPerfilStaff"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/baseline_account_circle_24"
+                    app:tint="@color/gray_bg"
+                    android:layout_marginEnd="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <View
+                            android:id="@+id/viewIndicadorEstado"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:background="@drawable/baseline_account_circle_24"
+                            android:backgroundTint="@color/red_error"
+                            android:layout_marginEnd="8dp"/>
+
+                        <TextView
+                            android:id="@+id/tvEstadoStaff"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No Disponible"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btnIrPerfil"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Editar mi foto 📷"
+                        android:textColor="#90A4AE"
+                        android:textSize="12sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"/>
+                </LinearLayout>
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchDisponibilidad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/white"
+                    app:trackTint="#90A4AE"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MIS ASIGNACIONES PENDIENTES"
+        android:padding="16dp"
+        android:textColor="#546E7A"
+        android:textStyle="bold"
+        android:textSize="14sp"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <LinearLayout
             android:id="@+id/contenedorServiciosStaff"
             android:layout_width="match_parent"
@@ -60,5 +143,4 @@
             android:orientation="vertical"
             android:padding="16dp"/>
     </ScrollView>
-
 </LinearLayout>

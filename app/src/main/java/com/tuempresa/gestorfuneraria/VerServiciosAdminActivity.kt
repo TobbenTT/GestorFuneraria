@@ -1,15 +1,25 @@
 package com.tuempresa.gestorfuneraria
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 class VerServiciosAdminActivity : AppCompatActivity() {
+
+    // Variable para guardar la lista original y poder filtrar
+    private var listaCompleta: List<DocumentSnapshot> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,14 +27,121 @@ class VerServiciosAdminActivity : AppCompatActivity() {
 
         val btnVolver = findViewById<ImageButton>(R.id.btnVolverAdmin)
         val contenedor = findViewById<LinearLayout>(R.id.contenedorGlobal)
+        val etBuscador = findViewById<EditText>(R.id.etBuscador) // <--- El buscador nuevo
 
         btnVolver.setOnClickListener { finish() }
 
-        // 1. Iniciamos la escucha en tiempo real
-        cargarTodosLosServicios(contenedor)
+        // 1. Cargar datos
+        cargarYEscucharServicios(contenedor)
 
-        // 2. Ejecutamos la limpieza en segundo plano
+        // 2. Configurar el Buscador (Escucha lo que escribes)
+        etBuscador.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filtrarLista(s.toString(), contenedor)
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        // 3. Limpieza automática
         verificarLimpiezaAutomatica()
+    }
+
+    private fun cargarYEscucharServicios(contenedor: LinearLayout) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("servicios")
+            .addSnapshotListener { snapshots, e ->
+                if (e != null) return@addSnapshotListener
+
+                if (snapshots != null) {
+                    // Guardamos la lista original en memoria
+                    listaCompleta = snapshots.documents
+
+                    // Mostramos todo al principio
+                    renderizarLista(listaCompleta, contenedor)
+                }
+            }
+    }
+
+    // Función que filtra la lista en memoria
+    private fun filtrarLista(texto: String, contenedor: LinearLayout) {
+        val textoBusqueda = texto.lowercase().trim()
+
+        val listaFiltrada = listaCompleta.filter { doc ->
+            val difunto = (doc.getString("difunto") ?: "").lowercase()
+            val cementerio = (doc.getString("cementerio") ?: "").lowercase()
+
+            // Si el nombre O el cementerio contienen el texto, lo mostramos
+            difunto.contains(textoBusqueda) || cementerio.contains(textoBusqueda)
+        }
+
+        renderizarLista(listaFiltrada, contenedor)
+    }
+
+    // Función encargada de "Dibujar" las tarjetas
+    private fun renderizarLista(lista: List<DocumentSnapshot>, contenedor: LinearLayout) {
+        contenedor.removeAllViews()
+
+        if (lista.isEmpty()) {
+            val mensaje = TextView(this)
+            mensaje.text = "No se encontraron resultados"
+            mensaje.setPadding(20, 20, 20, 20)
+            contenedor.addView(mensaje)
+            return
+        }
+
+        for (doc in lista) {
+            val vista = LayoutInflater.from(this).inflate(R.layout.item_servicio, contenedor, false)
+
+            // Llenar datos
+            vista.findViewById<TextView>(R.id.tvDifunto).text = doc.getString("difunto")
+            vista.findViewById<TextView>(R.id.tvDatos).text = "${doc.getString("fecha")} - ${doc.getString("hora")}\n${doc.getString("cementerio")}"
+
+            // Colores según estado
+            val tvEstado = vista.findViewById<TextView>(R.id.tvEstado)
+            val estado = doc.getString("estado") ?: "PENDIENTE"
+            tvEstado.text = estado
+
+            if (estado.contains("FINALIZADO")) {
+                tvEstado.setTextColor(android.graphics.Color.parseColor("#00C853")) // Verde
+            } else if (estado.contains("EN LUGAR")) {
+                tvEstado.setTextColor(android.graphics.Color.parseColor("#2962FF")) // Azul
+            } else {
+                tvEstado.setTextColor(android.graphics.Color.RED) // Rojo
+            }
+
+            // Botón WhatsApp
+            val btnWsp = vista.findViewById<ImageButton>(R.id.btnWhatsapp)
+            val telefono = doc.getString("telefonoContacto") ?: ""
+            if (telefono.isNotEmpty()) {
+                btnWsp.setOnClickListener {
+                    try {
+                        val num = telefono.replace(Regex("[^0-9]"), "")
+                        val finalNum = if (num.startsWith("569")) num else "569$num"
+                        val i = Intent(Intent.ACTION_VIEW, Uri.parse("https://api.whatsapp.com/send?phone=$finalNum"))
+                        startActivity(i)
+                    } catch (e: Exception) { Toast.makeText(this, "Error WhatsApp", Toast.LENGTH_SHORT).show() }
+                }
+            } else {
+                btnWsp.alpha = 0.3f
+                btnWsp.isEnabled = false
+            }
+
+            // Botón Mapa
+            val btnMapa = vista.findViewById<Button>(R.id.btnMapa)
+            btnMapa.setOnClickListener {
+                val dir = doc.getString("cementerio") ?: ""
+                val i = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + Uri.encode(dir)))
+                i.setPackage("com.google.android.apps.maps")
+                try { startActivity(i) } catch (e: Exception) { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + Uri.encode(dir)))) }
+            }
+
+            // Ocultar finalizar (es admin)
+            try { vista.findViewById<Button>(R.id.btnFinalizar).visibility = android.view.View.GONE } catch (e: Exception) {}
+
+            contenedor.addView(vista)
+        }
     }
 
     // --- FUNCIÓN DE LIMPIEZA AUTOMÁTICA ---
