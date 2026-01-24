@@ -1,116 +1,134 @@
 package com.tuempresa.gestorfuneraria
 
+import android.content.DialogInterface
+import android.graphics.Color
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.view.Gravity
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog // <--- Importante para la alerta
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
+import androidx.cardview.widget.CardView
 import com.google.firebase.firestore.FirebaseFirestore
 
 class VerChoferesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_ver_servicios_admin) // Reusamos el layout base
+        setContentView(R.layout.activity_ver_choferes) // Asegúrate de que este layout exista
 
-        val contenedor = findViewById<LinearLayout>(R.id.contenedorGlobal)
-        val btnVolver = findViewById<ImageButton>(R.id.btnVolverAdmin)
+        val btnVolver = findViewById<ImageButton>(R.id.btnVolverChoferes)
+        val contenedor = findViewById<LinearLayout>(R.id.contenedorChoferes)
 
         btnVolver.setOnClickListener { finish() }
 
-        // Cambiamos el título visualmente (Opcional, pero se ve mejor)
-        // Puedes buscar el TextView del título si quieres, o dejarlo así.
-
-        cargarChoferesEnVivo(contenedor)
+        cargarChoferes(contenedor)
     }
 
-    private fun cargarChoferesEnVivo(contenedor: LinearLayout) {
+    private fun cargarChoferes(contenedor: LinearLayout) {
         val db = FirebaseFirestore.getInstance()
 
+        // Escuchamos en tiempo real para ver si cambian su estado (Disponible/Ocupado)
         db.collection("usuarios")
             .whereEqualTo("rol", "STAFF")
             .addSnapshotListener { snapshots, e ->
-                if (e != null) return@addSnapshotListener
+                if (e != null) {
+                    Toast.makeText(this, "Error al cargar", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
 
                 contenedor.removeAllViews()
 
-                if (snapshots != null) {
-                    for (doc in snapshots) {
+                if (snapshots != null && !snapshots.isEmpty) {
+                    for (doc in snapshots.documents) {
+
+                        // 1. OBTENER DATOS
                         val email = doc.id
-                        val disponible = doc.getBoolean("disponible") ?: false
-                        val urlFoto = doc.getString("fotoUrl") ?: ""
+                        val nombre = doc.getString("nombre") ?: "Sin Nombre Registrado"
+                        val isDisponible = doc.getBoolean("disponible") ?: false
 
-                        // Inflamos la tarjeta
-                        val vista = LayoutInflater.from(this).inflate(R.layout.item_chofer, contenedor, false)
+                        // 2. CREAR TARJETA (Visualmente bonito)
+                        val card = CardView(this)
+                        val params = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                        params.setMargins(0, 0, 0, 24)
+                        card.layoutParams = params
+                        card.radius = 16f
+                        card.cardElevation = 6f
+                        card.setContentPadding(32, 32, 32, 32)
 
-                        val tvEmail = vista.findViewById<TextView>(R.id.tvEmailChofer)
-                        val tvTexto = vista.findViewById<TextView>(R.id.tvEstadoTexto)
-                        val bolita = vista.findViewById<android.view.View>(R.id.viewEstadoColor)
-                        val imgPerfil = vista.findViewById<android.widget.ImageView>(R.id.imgFotoPerfil)
+                        // Contenido de la tarjeta
+                        val layoutInterno = LinearLayout(this)
+                        layoutInterno.orientation = LinearLayout.VERTICAL
 
+                        // A. NOMBRE (Grande y Dorado)
+                        val tvNombre = TextView(this)
+                        tvNombre.text = nombre
+                        tvNombre.textSize = 18f
+                        tvNombre.setTypeface(null, android.graphics.Typeface.BOLD)
+                        tvNombre.setTextColor(Color.parseColor("#FFD700")) // Dorado
+                        layoutInterno.addView(tvNombre)
+
+                        // B. CORREO (Pequeño y Gris)
+                        val tvEmail = TextView(this)
                         tvEmail.text = email
+                        tvEmail.textSize = 14f
+                        tvEmail.setTextColor(Color.DKGRAY)
+                        tvEmail.setPadding(0, 4, 0, 16)
+                        layoutInterno.addView(tvEmail)
 
-                        // Colores
-                        if (disponible) {
-                            tvTexto.text = "DISPONIBLE"
-                            tvTexto.setTextColor(android.graphics.Color.parseColor("#00C853"))
-                            bolita.background.setTint(android.graphics.Color.parseColor("#00C853"))
+                        // C. ESTADO (Con color)
+                        val tvEstado = TextView(this)
+                        if (isDisponible) {
+                            tvEstado.text = "🟢 DISPONIBLE"
+                            tvEstado.setTextColor(Color.parseColor("#00C853")) // Verde
                         } else {
-                            tvTexto.text = "OCUPADO / NO TURNO"
-                            tvTexto.setTextColor(android.graphics.Color.RED)
-                            bolita.background.setTint(android.graphics.Color.RED)
+                            tvEstado.text = "🔴 OCUPADO / NO DISPONIBLE"
+                            tvEstado.setTextColor(Color.parseColor("#D32F2F")) // Rojo
                         }
+                        tvEstado.textSize = 14f
+                        tvEstado.setTypeface(null, android.graphics.Typeface.BOLD)
+                        layoutInterno.addView(tvEstado)
 
-                        // Cargar Foto
-                        if (urlFoto.isNotEmpty()) {
-                            imgPerfil.clearColorFilter()
-                            imgPerfil.imageTintList = null
-                            Glide.with(this).load(urlFoto).circleCrop().into(imgPerfil)
-                        } else {
-                            imgPerfil.setImageResource(R.drawable.baseline_account_circle_24)
-                            imgPerfil.setColorFilter(android.graphics.Color.BLACK)
+                        // D. BOTÓN ELIMINAR (Opcional, por si despides a alguien)
+                        val btnEliminar = Button(this)
+                        btnEliminar.text = "Desvincular Chofer"
+                        btnEliminar.textSize = 10f
+                        btnEliminar.setBackgroundColor(Color.TRANSPARENT)
+                        btnEliminar.setTextColor(Color.RED)
+                        btnEliminar.gravity = Gravity.END
+                        btnEliminar.setOnClickListener {
+                            confirmarEliminacion(email)
                         }
+                        layoutInterno.addView(btnEliminar)
 
-                        // --- NUEVO: BORRAR USUARIO CON CLICK LARGO ---
-                        vista.setOnLongClickListener {
-                            mostrarAlertaBorrar(email)
-                            true // "true" significa que consumimos el evento (para que no haga click normal también)
-                        }
-                        // ---------------------------------------------
-
-                        contenedor.addView(vista)
+                        card.addView(layoutInterno)
+                        contenedor.addView(card)
                     }
+                } else {
+                    val aviso = TextView(this)
+                    aviso.text = "No hay choferes registrados."
+                    contenedor.addView(aviso)
                 }
             }
     }
 
-    // Función para mostrar la pregunta de seguridad
-    private fun mostrarAlertaBorrar(emailChofer: String) {
+    private fun confirmarEliminacion(email: String) {
         AlertDialog.Builder(this)
-            .setTitle("¿Eliminar a este Chofer?")
-            .setMessage("Estás a punto de eliminar a:\n$emailChofer\n\nSe borrarán sus datos y no aparecerá en la lista.")
+            .setTitle("¿Despedir empleado?")
+            .setMessage("Se eliminará el acceso de $email al sistema permanentemente.")
             .setPositiveButton("ELIMINAR") { _, _ ->
-                borrarChoferDeFirebase(emailChofer)
+                FirebaseFirestore.getInstance().collection("usuarios").document(email).delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Chofer eliminado", Toast.LENGTH_SHORT).show()
+                    }
             }
             .setNegativeButton("Cancelar", null)
             .show()
-    }
-
-    private fun borrarChoferDeFirebase(email: String) {
-        val db = FirebaseFirestore.getInstance()
-
-        // Borramos el documento de la colección "usuarios"
-        db.collection("usuarios").document(email).delete()
-            .addOnSuccessListener {
-                Toast.makeText(this, "Chofer eliminado correctamente 🗑️", Toast.LENGTH_SHORT).show()
-                // No hace falta recargar manual, el SnapshotListener lo hará solo
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show()
-            }
     }
 }

@@ -3,22 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+    android:layout_marginBottom="16dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/white">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:id="@+id/tvDifunto"
@@ -29,83 +29,73 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"/>
+
+            <TextView
+                android:id="@+id/tvEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PENDIENTE"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#D32F2F"/>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="DETALLES DEL SERVICIO"
-            android:textSize="10sp"
-            android:textColor="#999999"
-            android:letterSpacing="0.1"/>
+            android:background="#E0E0E0"
+            android:layout_marginBottom="8dp"/>
 
         <TextView
             android:id="@+id/tvDatos"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fecha - Cementerio"
-            android:textSize="15sp"
-            android:textColor="@color/dark_gray"
-            android:layout_marginTop="4dp"
+            android:text="Fecha y Hora"
+            android:textColor="#546E7A"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvDirecciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🏠 Retiro: Calle 123\n✝️ Destino: Cementerio X"
+            android:textColor="#37474F"
+            android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:id="@+id/tvEstado"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="PENDIENTE"
-                    android:textStyle="bold"
-                    android:textColor="@color/red_error"/>
-
-                <ImageButton
-                    android:id="@+id/btnWhatsapp"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@android:drawable/stat_sys_phone_call"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="#25D366"
-                    android:contentDescription="Llamar WhatsApp"/>
-
-                <Button
-                    android:id="@+id/btnMapa"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="IR AL MAPA"
-                    android:textSize="12sp"
-                    android:backgroundTint="@color/black"
-                    android:textColor="@color/gold"/>
-            </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnWhatsapp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@android:drawable/ic_menu_call"
+                app:tint="#25D366"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="16dp"/>
 
             <Button
-                android:id="@+id/btnFinalizar"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="✅ MARCAR COMO FINALIZADO"
-                android:textStyle="bold"
-                android:backgroundTint="#00C853"
+                android:id="@+id/btnAccionPrincipal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="INICIAR VIAJE"
+                android:backgroundTint="#2962FF"
                 android:textColor="@color/white"
-                android:visibility="gone"/>
-        </LinearLayout>
+                android:textStyle="bold"/>
 
+            <Button
+                android:id="@+id/btnMapa"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="🗺️"
+                android:backgroundTint="#FFD700"
+                android:textColor="@color/black"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

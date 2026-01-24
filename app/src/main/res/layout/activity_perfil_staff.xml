@@ -4,83 +4,146 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:background="@color/white"
-    android:padding="24dp">
+    android:background="@color/white">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Editar Perfil"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_marginBottom="24dp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@color/black"
+        android:padding="16dp"
+        android:elevation="4dp">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        app:cardCornerRadius="60dp"
-        app:cardElevation="4dp"
-        android:layout_marginBottom="24dp">
-        <ImageView
-            android:id="@+id/imgPerfilPreview"
+        <ImageButton
+            android:id="@+id/btnVolverAtras"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/gold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Editar Perfil"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/gold"
+            android:layout_marginStart="16dp"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/baseline_account_circle_24"
-            android:scaleType="centerCrop"/>
-    </androidx.cardview.widget.CardView>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="24dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tu Nombre Completo"
-        android:textColor="@color/gold"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+            <androidx.cardview.widget.CardView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                app:cardCornerRadius="60dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="24dp">
+                <ImageView
+                    android:id="@+id/imgPerfilPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/baseline_account_circle_24"
+                    android:scaleType="centerCrop"/>
+            </androidx.cardview.widget.CardView>
 
-    <EditText
-        android:id="@+id/etNombreStaff"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Ej: Juan Pérez"
-        android:inputType="textPersonName"
-        android:background="@android:drawable/editbox_background_normal"
-        android:layout_marginBottom="16dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Datos Personales"
+                android:textColor="#FBC02D"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enlace de tu Foto (URL)"
-        android:textColor="@color/gold"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+            <EditText
+                android:id="@+id/etNombreStaff"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Ej: Juan Pérez"
+                android:inputType="textPersonName"
+                android:background="@android:drawable/editbox_background_normal"
+                android:layout_marginBottom="16dp"/>
 
-    <EditText
-        android:id="@+id/etUrlFoto"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Pega aquí el link de tu imagen..."
-        android:inputType="textUri"
-        android:background="@android:drawable/editbox_background_normal"
-        android:layout_marginBottom="24dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enlace de tu Foto (URL)"
+                android:textColor="#FBC02D"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
 
-    <Button
-        android:id="@+id/btnGuardarPerfil"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="GUARDAR CAMBIOS"
-        android:backgroundTint="@color/black"
-        android:textColor="@color/gold"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp"/>
+            <EditText
+                android:id="@+id/etUrlFoto"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Pega aquí el link de tu imagen..."
+                android:inputType="textUri"
+                android:background="@android:drawable/editbox_background_normal"
+                android:layout_marginBottom="24dp"/>
 
-    <Button
-        android:id="@+id/btnVolver"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:text="CANCELAR"
-        android:backgroundTint="#B0BEC5"
-        android:textColor="@color/white"/>
+            <Button
+                android:id="@+id/btnGuardarPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:text="GUARDAR DATOS"
+                android:backgroundTint="@color/black"
+                android:textColor="#FBC02D"
+                android:textStyle="bold"
+                android:layout_marginBottom="32dp"/>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginBottom="24dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cambio de Contraseña"
+                android:textColor="#D32F2F"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ingresa una nueva contraseña segura para reemplazar la temporal."
+                android:textSize="12sp"
+                android:textColor="#546E7A"
+                android:layout_marginBottom="12dp"/>
+
+            <EditText
+                android:id="@+id/etNuevaPass"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="Nueva Contraseña (Mín. 6 caracteres)"
+                android:inputType="textPassword|textNoSuggestions"
+                android:background="@android:drawable/editbox_background_normal"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/btnCambiarPass"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:text="ACTUALIZAR CONTRASEÑA"
+                android:backgroundTint="#D32F2F"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:layout_marginBottom="32dp"/>
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

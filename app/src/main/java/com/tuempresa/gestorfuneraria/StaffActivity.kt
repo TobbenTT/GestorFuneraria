@@ -30,7 +30,6 @@ class StaffActivity : AppCompatActivity() {
     private lateinit var tvNombre: TextView
     private lateinit var imgPerfil: ImageView
     private lateinit var tvEstado: TextView
-    private lateinit var viewIndicador: View
     private lateinit var switchDisponibilidad: SwitchMaterial
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,85 +40,67 @@ class StaffActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         val usuario = auth.currentUser
 
-        if (usuario == null) {
-            volverAlLogin()
-            return
-        }
+        if (usuario == null) { finish(); return }
         emailActual = usuario.email ?: ""
 
-        // 1. Iniciar Vistas
+        // Inicializar Vistas (Asegúrate de tener estos IDs en activity_staff.xml)
         tvNombre = findViewById(R.id.tvNombreStaff)
         imgPerfil = findViewById(R.id.imgPerfilStaff)
         tvEstado = findViewById(R.id.tvEstadoStaff)
-        viewIndicador = findViewById(R.id.viewIndicadorEstado)
         switchDisponibilidad = findViewById(R.id.switchDisponibilidad)
         val contenedor = findViewById<LinearLayout>(R.id.contenedorServiciosStaff)
 
-        // 2. Configurar Botones Superiores
-        findViewById<View>(R.id.btnIrPerfil).setOnClickListener {
-            startActivity(Intent(this, PerfilStaffActivity::class.java))
-        }
-
-        findViewById<ImageButton>(R.id.btnCerrarSesion).setOnClickListener {
+        try {
+            findViewById<View>(R.id.btnIrPerfil).setOnClickListener { startActivity(Intent(this, PerfilStaffActivity::class.java)) }
+            findViewById<ImageButton>(R.id.btnCerrarSesion).setOnClickListener { auth.signOut(); finish() }
+        } catch (e: Exception) {}
+        // Configurar Botón Cerrar Sesión
+        val btnCerrar = findViewById<ImageButton>(R.id.btnCerrarSesion)
+        btnCerrar.setOnClickListener {
+            // 1. Cerrar sesión en Firebase
             auth.signOut()
-            volverAlLogin()
+
+            // 2. Crear el viaje de vuelta al Login (MainActivity)
+            val intent = Intent(this, MainActivity::class.java)
+
+            // 3. Limpiar la pila (Para que al dar "Atrás" no vuelva a entrar)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+            // 4. Iniciar el Login y matar esta pantalla
+            startActivity(intent)
+            finish()
         }
 
-        // 3. Cargar Datos del Chofer (Nombre, Foto, Switch)
         cargarDatosPerfil()
-
-        // 4. Cargar la Lista de Tareas (Con botón "Llegada" y "Finalizar")
         cargarMisServicios(contenedor)
     }
 
     private fun cargarDatosPerfil() {
-        db.collection("usuarios").document(emailActual)
-            .addSnapshotListener { document, e ->
-                if (e != null || document == null || !document.exists()) return@addSnapshotListener
-
-                // Nombre
-                val nombre = document.getString("nombre") ?: "Chofer"
-                tvNombre.text = nombre
-
-                // Foto
-                val urlFoto = document.getString("fotoUrl")
-                if (!urlFoto.isNullOrEmpty()) {
-                    Glide.with(this).load(urlFoto).circleCrop().into(imgPerfil)
-                    imgPerfil.clearColorFilter()
-                }
-
-                // Estado (Disponible/Ocupado)
-                val disponible = document.getBoolean("disponible") ?: false
-                actualizarUIEstado(disponible)
-
-                // Switch (evitando bucle infinito)
-                switchDisponibilidad.setOnCheckedChangeListener(null)
-                switchDisponibilidad.isChecked = disponible
-                switchDisponibilidad.setOnCheckedChangeListener { _, isChecked ->
-                    actualizarEstadoEnFirebase(isChecked)
-                }
+        db.collection("usuarios").document(emailActual).addSnapshotListener { document, _ ->
+            if (document == null || !document.exists()) return@addSnapshotListener
+            tvNombre.text = document.getString("nombre") ?: "Chofer"
+            val url = document.getString("fotoUrl")
+            if (!url.isNullOrEmpty()) {
+                Glide.with(this).load(url).circleCrop().into(imgPerfil)
+                imgPerfil.colorFilter = null
+            } else {
+                imgPerfil.setImageResource(R.drawable.baseline_account_circle_24)
+                imgPerfil.setColorFilter(Color.parseColor("#B0BEC5"))
             }
-    }
-
-    private fun actualizarUIEstado(disponible: Boolean) {
-        if (disponible) {
-            tvEstado.text = "Disponible"
-            tvEstado.setTextColor(Color.parseColor("#00C853")) // Verde
-            viewIndicador.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#00C853"))
-        } else {
-            tvEstado.text = "Ocupado"
-            tvEstado.setTextColor(Color.parseColor("#D32F2F")) // Rojo
-            viewIndicador.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#D32F2F"))
+            val disp = document.getBoolean("disponible") ?: false
+            if (disp) {
+                tvEstado.text = "Disponible"
+                tvEstado.setTextColor(Color.parseColor("#00C853"))
+            } else {
+                tvEstado.text = "Ocupado"
+                tvEstado.setTextColor(Color.parseColor("#D32F2F"))
+            }
+            switchDisponibilidad.setOnCheckedChangeListener(null)
+            switchDisponibilidad.isChecked = disp
+            switchDisponibilidad.setOnCheckedChangeListener { _, isChecked ->
+                db.collection("usuarios").document(emailActual).update("disponible", isChecked)
+            }
         }
-    }
-
-    private fun actualizarEstadoEnFirebase(disponible: Boolean) {
-        db.collection("usuarios").document(emailActual)
-            .update("disponible", disponible)
-            .addOnFailureListener {
-                switchDisponibilidad.isChecked = !disponible // Revertir si falla
-                Toast.makeText(this, "Error de conexión", Toast.LENGTH_SHORT).show()
-            }
     }
 
     private fun cargarMisServicios(contenedor: LinearLayout) {
@@ -134,74 +115,98 @@ class StaffActivity : AppCompatActivity() {
                     for (doc in snapshots.documents) {
                         val vista = LayoutInflater.from(this).inflate(R.layout.item_servicio, contenedor, false)
 
-                        // A. Datos Básicos
-                        vista.findViewById<TextView>(R.id.tvDifunto).text = doc.getString("difunto")
-                        vista.findViewById<TextView>(R.id.tvDatos).text = "${doc.getString("fecha")} - ${doc.getString("hora")}\n${doc.getString("cementerio")}"
-                        vista.findViewById<TextView>(R.id.tvEstado).text = doc.getString("estado")
+                        // 1. DATOS
+                        val estadoActual = doc.getString("estado") ?: "PENDIENTE"
+                        val retiro = doc.getString("direccion_retiro") ?: "Sin datos"
+                        val destino = doc.getString("cementerio") ?: "Sin datos"
 
-                        // B. Botón Mapa
+                        vista.findViewById<TextView>(R.id.tvDifunto).text = doc.getString("difunto")
+                        vista.findViewById<TextView>(R.id.tvDatos).text = "${doc.getString("fecha")} - ${doc.getString("hora")}"
+                        vista.findViewById<TextView>(R.id.tvDirecciones).text = "🏠 Retiro: $retiro\n✝️ Destino: $destino"
+                        vista.findViewById<TextView>(R.id.tvEstado).text = estadoActual
+
+                        val btnAccion = vista.findViewById<Button>(R.id.btnAccionPrincipal)
                         val btnMapa = vista.findViewById<Button>(R.id.btnMapa)
-                        val direccion = doc.getString("cementerio") ?: ""
-                        btnMapa.setOnClickListener {
-                            val uri = Uri.parse("geo:0,0?q=" + Uri.encode(direccion))
-                            val intent = Intent(Intent.ACTION_VIEW, uri)
-                            intent.setPackage("com.google.android.apps.maps")
-                            try { startActivity(intent) } catch (e: Exception) { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+
+                        // 2. LÓGICA DE BOTONES Y MAPA SEGÚN ESTADO
+                        when (estadoActual) {
+                            "PENDIENTE" -> {
+                                // Paso 1: Ir a buscar al fallecido
+                                btnAccion.text = "LLEGUÉ A RETIRO 🏠"
+                                btnAccion.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#2962FF")) // Azul
+                                btnAccion.setOnClickListener { actualizarEstadoServicio(doc.id, "EN RETIRO") }
+
+                                // Mapa lleva al Retiro
+                                btnMapa.setOnClickListener { abrirMapa(retiro) }
+                            }
+                            "EN RETIRO" -> {
+                                // Paso 2: Ir al cementerio
+                                btnAccion.text = "LLEGUÉ A CEMENTERIO ✝️"
+                                btnAccion.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FF6D00")) // Naranja
+                                btnAccion.setOnClickListener { actualizarEstadoServicio(doc.id, "EN CEMENTERIO") }
+
+                                // Mapa lleva al Cementerio
+                                btnMapa.setOnClickListener { abrirMapa(destino) }
+                            }
+                            "EN CEMENTERIO" -> {
+                                // Paso 3: Finalizar
+                                btnAccion.text = "FINALIZAR ✅"
+                                btnAccion.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#00C853")) // Verde
+                                btnAccion.setOnClickListener { confirmarFinalizar(doc.id) }
+
+                                // Mapa sigue en Cementerio
+                                btnMapa.setOnClickListener { abrirMapa(destino) }
+                            }
+                            else -> {
+                                btnAccion.text = "FINALIZAR"
+                                btnAccion.setOnClickListener { confirmarFinalizar(doc.id) }
+                            }
                         }
 
-                        // C. BOTÓN INTELIGENTE (LLEGADA / FINALIZAR)
-                        val btnAccion = vista.findViewById<Button>(R.id.btnFinalizar)
-                        btnAccion.visibility = View.VISIBLE
-                        val estadoActual = doc.getString("estado") ?: "PENDIENTE"
-
-                        if (estadoActual == "PENDIENTE") {
-                            // MODO 1: En camino -> Marcar Llegada
-                            btnAccion.text = "📍 MARCAR LLEGADA"
-                            btnAccion.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#2962FF")) // Azul
-                            btnAccion.setOnClickListener {
-                                db.collection("servicios").document(doc.id).update("estado", "EN LUGAR 🏁")
+                        // WhatsApp (Opcional)
+                        val btnWsp = vista.findViewById<ImageButton>(R.id.btnWhatsapp)
+                        val telefono = doc.getString("telefonoContacto") ?: ""
+                        if(telefono.isNotEmpty()){
+                            btnWsp.setOnClickListener {
+                                val url = "https://api.whatsapp.com/send?phone=${telefono.replace("+", "")}"
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                             }
                         } else {
-                            // MODO 2: En lugar -> Finalizar
-                            btnAccion.text = "✅ FINALIZAR SERVICIO"
-                            btnAccion.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#00C853")) // Verde
-                            btnAccion.setOnClickListener {
-                                mostrarConfirmacion(doc.id)
-                            }
+                            btnWsp.visibility = View.GONE
                         }
-
-                        // Ocultar WhatsApp (innecesario para chofer si ya tiene hoja de ruta)
-                        try { vista.findViewById<View>(R.id.btnWhatsapp).visibility = View.GONE } catch (e: Exception) {}
 
                         contenedor.addView(vista)
                     }
                 } else {
-                    val mensaje = TextView(this)
-                    mensaje.text = "No tienes servicios pendientes.\n¡Buen trabajo! 😴"
-                    mensaje.gravity = android.view.Gravity.CENTER
-                    mensaje.setPadding(50, 100, 50, 50)
-                    mensaje.setTextColor(Color.DKGRAY)
-                    contenedor.addView(mensaje)
+                    val msj = TextView(this)
+                    msj.text = "No tienes servicios activos."
+                    msj.setTextColor(Color.GRAY)
+                    msj.setPadding(50,50,50,50)
+                    contenedor.addView(msj)
                 }
             }
     }
 
-    private fun mostrarConfirmacion(idDocumento: String) {
+    private fun actualizarEstadoServicio(docId: String, nuevoEstado: String) {
+        db.collection("servicios").document(docId).update("estado", nuevoEstado)
+            .addOnSuccessListener { Toast.makeText(this, "Estado: $nuevoEstado", Toast.LENGTH_SHORT).show() }
+    }
+
+    private fun confirmarFinalizar(docId: String) {
         AlertDialog.Builder(this)
             .setTitle("¿Finalizar Servicio?")
-            .setMessage("El servicio se marcará como completado y saldrá de tu lista.")
-            .setPositiveButton("FINALIZAR") { _, _ ->
-                db.collection("servicios").document(idDocumento).update("estado", "FINALIZADO ✅")
-                Toast.makeText(this, "Servicio Completado", Toast.LENGTH_SHORT).show()
+            .setMessage("Se marcará como completado y saldrá de tu lista.")
+            .setPositiveButton("SÍ, FINALIZAR") { _, _ ->
+                actualizarEstadoServicio(docId, "FINALIZADO ✅")
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun volverAlLogin() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
+    private fun abrirMapa(direccion: String) {
+        val uri = Uri.parse("geo:0,0?q=" + Uri.encode(direccion))
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.google.android.apps.maps")
+        try { startActivity(intent) } catch (e: Exception) { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
     }
 }
