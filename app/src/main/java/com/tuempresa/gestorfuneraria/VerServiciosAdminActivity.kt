@@ -93,14 +93,34 @@ class VerServiciosAdminActivity : AppCompatActivity() {
         for (doc in lista) {
             val vista = LayoutInflater.from(this).inflate(R.layout.item_servicio, contenedor, false)
 
-            // --- 1. LLENADO DE DATOS (Actualizado con Retiro) ---
+            // --- 1. LLENADO DE DATOS (Actualizado para mostrar Acompañante) ---
             val retiro = doc.getString("direccion_retiro") ?: "Sin datos"
             val cementerio = doc.getString("cementerio") ?: "Sin datos"
             val chofer = doc.getString("staff_nombre") ?: "Sin Asignar"
 
-            vista.findViewById<TextView>(R.id.tvDifunto).text = "${doc.getString("difunto")} (Chofer: $chofer)"
+            // NUEVO: Leemos si hay un acompañante guardado
+            val acompanante = doc.getString("acompanante") ?: ""
+
+            // Si hay acompañante, lo mostramos entre paréntesis al lado del chofer
+            val textoChofer = if (acompanante.isNotEmpty()) {
+                "$chofer (Apoyo: $acompanante) 👥"
+            } else {
+                chofer
+            }
+
+            vista.findViewById<TextView>(R.id.tvDifunto).text = "${doc.getString("difunto")}"
+
+            // Usamos un color distinto si es un RESPALDO MANUAL para diferenciarlo
+            val tipoRegistro = doc.getString("tipo_registro")
+            if (tipoRegistro == "RESPALDO_MANUAL") {
+                vista.findViewById<TextView>(R.id.tvDifunto).append(" [HISTORIAL] 📂")
+            }
+
             vista.findViewById<TextView>(R.id.tvDatos).text = "📅 ${doc.getString("fecha")} - ⏰ ${doc.getString("hora")}"
 
+            // Mostramos el Chofer + Acompañante aquí abajo o en el título
+            // Para que se vea ordenado, agreguémoslo en una línea nueva en la dirección o datos:
+            vista.findViewById<TextView>(R.id.tvDirecciones).text = "👮 Encargados: $textoChofer\n🏠 Retiro: $retiro\n✝️ Destino: $cementerio"
             // Aquí mostramos la ruta completa
             vista.findViewById<TextView>(R.id.tvDirecciones).text = "🏠 Retiro: $retiro\n✝️ Destino: $cementerio"
 

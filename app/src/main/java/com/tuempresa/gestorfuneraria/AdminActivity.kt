@@ -1,6 +1,8 @@
 package com.tuempresa.gestorfuneraria
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,6 +17,13 @@ class AdminActivity : AppCompatActivity() {
         // Fíjate que usamos los nuevos IDs: cardNuevoServicio y cardLogout
         val btnNuevo = findViewById<android.view.View>(R.id.cardNuevoServicio)
         val btnLogout = findViewById<android.view.View>(R.id.cardLogout)
+
+        val btnRespaldo = findViewById<View>(R.id.cardRespaldo)
+
+        btnRespaldo.setOnClickListener {
+            // Abrimos la actividad de respaldo
+            startActivity(Intent(this, RespaldoServicioActivity::class.java))
+        }
 
         btnNuevo.setOnClickListener {
             val intent = android.content.Intent(this, CrearServicioActivity::class.java)
