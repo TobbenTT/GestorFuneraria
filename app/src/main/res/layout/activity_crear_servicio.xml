@@ -24,6 +24,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/black"/>
         <TextView
+            android:id="@+id/tvTituloPantalla"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nueva Asignación"

@@ -15,6 +15,9 @@ class RespaldoServicioActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var spinner: Spinner
 
+    // Variable para saber si estamos editando
+    private var idEditar: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_respaldo_servicio)
@@ -29,7 +32,27 @@ class RespaldoServicioActivity : AppCompatActivity() {
         val etHora = findViewById<EditText>(R.id.etHoraRespaldo)
         val btnGuardar = findViewById<Button>(R.id.btnGuardarRespaldo)
 
-        cargarChoferes()
+        val btnVolver = findViewById<ImageButton>(R.id.btnVolverRespaldo)
+        btnVolver.setOnClickListener { finish() }
+
+        // --- 1. VERIFICAR SI VENIMOS A EDITAR ---
+        if (intent.hasExtra("ID_DOCUMENTO")) {
+            idEditar = intent.getStringExtra("ID_DOCUMENTO")
+
+            // Cambiamos el texto del botón
+            btnGuardar.text = "CORREGIR RESPALDO ✏️"
+
+            // Rellenamos los campos
+            etDifunto.setText(intent.getStringExtra("difunto"))
+            etAcompanante.setText(intent.getStringExtra("acompanante"))
+            etLugar.setText(intent.getStringExtra("cementerio")) // En respaldo usamos el campo cementerio como lugar
+            etFecha.setText(intent.getStringExtra("fecha"))
+            etHora.setText(intent.getStringExtra("hora"))
+
+            // Nota: El spinner se seleccionará solo cuando cargue la lista (ver abajo)
+        }
+
+        cargarChoferes(intent.getStringExtra("staff_email"))
         configurarFechaHora(etFecha, etHora)
 
         btnGuardar.setOnClickListener {
@@ -43,53 +66,69 @@ class RespaldoServicioActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Datos del Chofer
             val index = spinner.selectedItemPosition
             val emailChofer = listaEmails[index]
             val nombreChofer = listaNombres[index]
 
-            // CREAMOS EL RESPALDO
-            val respaldo = hashMapOf(
+            val datosRespaldo = hashMapOf<String, Any>(
                 "difunto" to difunto,
-                "cementerio" to lugar, // Usamos el campo cementerio para mantener compatibilidad
-                "acompanante" to etAcompanante.text.toString(), // Guardamos al acompañante
+                "cementerio" to lugar,
+                "acompanante" to etAcompanante.text.toString(),
                 "fecha" to etFecha.text.toString(),
                 "hora" to etHora.text.toString(),
                 "staff_nombre" to nombreChofer,
                 "staff_email" to emailChofer,
-                "direccion_retiro" to "Registro Manual (Oficina)", // Dato por defecto
-
-                // LA CLAVE MÁGICA:
+                "direccion_retiro" to "Registro Manual (Oficina)",
                 "estado" to "FINALIZADO ✅",
-
-                "tipo_registro" to "RESPALDO_MANUAL", // Para saber que fue creado por admin
-                "timestamp" to System.currentTimeMillis()
+                "tipo_registro" to "RESPALDO_MANUAL"
+                // No tocamos el timestamp al editar
             )
 
-            // Guardamos en la colección normal "servicios" para que salga en los reportes generales
-            db.collection("servicios").add(respaldo)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Respaldo Guardado Correctamente 📂", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Error al guardar", Toast.LENGTH_SHORT).show()
-                }
+            if (idEditar != null) {
+                // --- MODO ACTUALIZAR ---
+                db.collection("servicios").document(idEditar!!).update(datosRespaldo)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Respaldo Corregido ✅", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+            } else {
+                // --- MODO CREAR ---
+                datosRespaldo["timestamp"] = System.currentTimeMillis()
+                db.collection("servicios").add(datosRespaldo)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Respaldo Guardado 📂", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+            }
         }
     }
 
-    private fun cargarChoferes() {
+    private fun cargarChoferes(emailPreseleccionado: String?) {
         db.collection("usuarios").whereEqualTo("rol", "STAFF").get()
             .addOnSuccessListener { documents ->
                 listaNombres.clear()
                 listaEmails.clear()
+
+                var posicionSeleccionar = 0
+                var i = 0
+
                 for (doc in documents) {
                     val nombre = doc.getString("nombre") ?: "Sin Nombre"
                     listaNombres.add(nombre)
                     listaEmails.add(doc.id)
+
+                    if (doc.id == emailPreseleccionado) {
+                        posicionSeleccionar = i
+                    }
+                    i++
                 }
                 val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listaNombres)
                 spinner.adapter = adapter
+
+                // Si estamos editando, seleccionamos al chofer original
+                if (idEditar != null) {
+                    spinner.setSelection(posicionSeleccionar)
+                }
             }
     }
 

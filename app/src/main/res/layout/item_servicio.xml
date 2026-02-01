@@ -4,98 +4,161 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    android:backgroundTint="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:id="@+id/tvDifunto"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Nombre Difunto"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+            android:background="#FAFAFA"
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/tvEstado"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="PENDIENTE"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="#D32F2F"/>
+
+            <ImageButton
+                android:id="@+id/btnEditar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="#FBC02D"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="8dp"
+                android:tooltipText="Editar Servicio"/>
+
+            <ImageButton
+                android:id="@+id/btnEliminar"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="#D32F2F"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:tooltipText="Eliminar Servicio"/>
+
+
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginBottom="8dp"/>
-
-        <TextView
-            android:id="@+id/tvDatos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Fecha y Hora"
-            android:textColor="#546E7A"
-            android:layout_marginBottom="8dp"/>
-
-        <TextView
-            android:id="@+id/tvDirecciones"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🏠 Retiro: Calle 123\n✝️ Destino: Cementerio X"
-            android:textColor="#37474F"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"/>
+            android:background="#EEEEEE"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <ImageButton
-                android:id="@+id/btnWhatsapp"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:src="@android:drawable/ic_menu_call"
-                app:tint="#25D366"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="16dp"/>
-
-            <Button
-                android:id="@+id/btnAccionPrincipal"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvDifunto"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="INICIAR VIAJE"
-                android:backgroundTint="#2962FF"
-                android:textColor="@color/white"
-                android:textStyle="bold"/>
-
-            <Button
-                android:id="@+id/btnMapa"
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:text="🗺️"
-                android:backgroundTint="#FFD700"
+                android:text="Nombre del Difunto"
+                android:textSize="20sp"
+                android:textStyle="bold"
                 android:textColor="@color/black"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    app:tint="#757575"/>
+                <TextView
+                    android:id="@+id/tvDatos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha y Hora"
+                    android:textColor="#616161"
+                    android:textSize="14sp"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="#F3F4F6"
+                android:padding="8dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    app:tint="#1565C0"/>
+
+                <TextView
+                    android:id="@+id/tvPersonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chofer: Juan (Apoyo: Pedro)"
+                    android:textColor="#1565C0"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvDirecciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🏠 Retiro...\n✝️ Destino..."
+                android:textColor="#424242"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="16dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <ImageButton
+                    android:id="@+id/btnWhatsapp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_menu_call"
+                    app:tint="#25D366"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_marginEnd="12dp"/>
+                <Button
+                    android:id="@+id/btnMapa"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="VER MAPA 🗺️"
+                    android:textSize="12sp"
+                    android:backgroundTint="#FFD700"
+                    android:textColor="@color/black"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/btnAccionPrincipal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
